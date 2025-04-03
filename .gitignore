@@ -1,0 +1,17 @@
+/build
+/dev
+/doc
+/htdocs
+/scripts
+ChangeLog
+COPYING
+COPYRIGHT
+nightwatch.conf.js
+package-lock.json
+package.json
+README.md
+robots.txt
+SECURITY.md
+.DS_Store
+composer.lock
+composer.json
