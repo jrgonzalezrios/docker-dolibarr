@@ -1,0 +1,51 @@
+FROM php:8.2.5-apache
+
+WORKDIR /var/www/html
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y \
+    git \
+    libzip-dev \
+    libpng-dev \
+    libicu-dev \
+    libpq-dev \
+    libmagickwand-dev \
+    unzip \
+    curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install PHP extensions
+RUN docker-php-ext-install pdo_mysql zip exif pcntl bcmath gd calendar intl opcache
+
+# Configure PHP for production
+RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+
+# Enable Apache modules
+RUN a2enmod rewrite headers
+
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Copy application files
+COPY . /var/www/html
+
+# Install dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# Set permissions
+RUN mkdir -p /var/www/html/htdocs \
+    && chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
+
+# Configure Apache
+COPY my-app.conf /etc/apache2/sites-available/
+RUN a2ensite my-app.conf && a2dissite 000-default.conf
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s \
+    CMD curl -f http://localhost/ || exit 1
+
+EXPOSE 80
+CMD ["apache2-foreground"]
