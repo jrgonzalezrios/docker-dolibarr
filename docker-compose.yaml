@@ -8,20 +8,52 @@ services:
       - ./htdocs:/var/www/html/htdocs
     ports:
       - 9000:80
+    environment:
+      DOLI_DB_HOST: mysql_db
+      DOLI_DB_USER: root
+      DOLI_DB_PASSWORD: root
+      DOLI_DB_NAME: myapp
+      DOLI_ADMIN_LOGIN: admin
+      DOLI_ADMIN_PASSWORD: admin123
+      DOLI_URL_ROOT: 'http://localhost:9000'
     depends_on:
       - mysql_db
+    networks:
+      - app-network
+  
   mysql_db:
-    image: mysql:latest
-    command: --default-authentication-plugin=mysql_native_password
+    image: mysql:8.0
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: myapp
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+  
   phpmyadmin:
     image: phpmyadmin:latest
     restart: always
     ports:
       - 9001:80
     environment:
-      PMA_ARBITRARY: 1  
+      PMA_ARBITRARY: 1
+      PMA_HOST: mysql_db
+      PMA_USER: root
+      PMA_PASSWORD: root
+      UPLOAD_LIMIT: 64M
+      MEMORY_LIMIT: 512M
+      MAX_EXECUTION_TIME: 300
     depends_on:
       - mysql_db
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mysql_data:

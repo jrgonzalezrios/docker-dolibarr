@@ -1,4 +1,4 @@
-FROM php:8.2.5-apache
+FROM php:7.2.24-apache
 
 WORKDIR /var/www/html
 
@@ -14,11 +14,9 @@ RUN apt-get update && \
     libmagickwand-dev \
     unzip \
     curl
-#install whatever you need to make your application work.
 
-# RUN pecl install imagick && docker-php-ext-enable imagick
-
-RUN docker-php-ext-install pdo_mysql zip exif pcntl bcmath gd calendar intl
+# Install PHP extensions including mysqli
+RUN docker-php-ext-install pdo_mysql mysqli zip exif pcntl bcmath gd calendar intl
 RUN a2enmod rewrite
 
 # Install Composer globally
